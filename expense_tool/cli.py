@@ -19,7 +19,11 @@ def main(argv=None):
 
     expenses = storage.load(args.file)
     if args.cmd == "add":
-        core.add_expense(expenses, args.description, args.amount, args.category)
+        try:
+            core.add_expense(expenses, args.description, args.amount, args.category)
+        except ValueError as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 2
         storage.save(args.file, expenses)
         print("added")
     elif args.cmd == "report":

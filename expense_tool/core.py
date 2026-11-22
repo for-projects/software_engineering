@@ -2,10 +2,19 @@
 import csv
 import io
 import json
+import math
+
+
+def parse_amount(raw):
+    """Return a finite positive float or raise ValueError (mitigation M1)."""
+    value = float(raw)
+    if not math.isfinite(value) or value <= 0:
+        raise ValueError(f"amount must be a finite number > 0, got {raw!r}")
+    return value
 
 
 def make_expense(description, amount, category):
-    return {"description": description, "amount": float(amount), "category": category}
+    return {"description": description, "amount": parse_amount(amount), "category": category}
 
 
 def add_expense(expenses, description, amount, category):
