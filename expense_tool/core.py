@@ -45,12 +45,21 @@ def _render_text(expenses):
     return "\n".join(lines)
 
 
+_FORMULA_PREFIXES = ("=", "+", "-", "@", "\t", "\r")
+
+
+def _csv_safe(text):
+    """Neutralise spreadsheet formula injection by prefixing an apostrophe (mitigation M2)."""
+    text = str(text)
+    return "'" + text if text.startswith(_FORMULA_PREFIXES) else text
+
+
 def _render_csv(expenses):
     buf = io.StringIO()
     w = csv.writer(buf, lineterminator="\n")
     w.writerow(["category", "description", "amount"])
     for e in expenses:
-        w.writerow([e["category"], e["description"], e["amount"]])
+        w.writerow([_csv_safe(e["category"]), _csv_safe(e["description"]), e["amount"]])
     return buf.getvalue()
 
 
