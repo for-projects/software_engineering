@@ -27,22 +27,35 @@ def by_category(expenses):
     return result
 
 
+def _render_text(expenses):
+    lines = [
+        f'{e["category"]} | {e["description"]} | {e["amount"]:.2f}'
+        for e in expenses
+    ]
+    lines.append(f"TOTAL: {total(expenses):.2f}")
+    return "\n".join(lines)
+
+
+def _render_csv(expenses):
+    buf = io.StringIO()
+    w = csv.writer(buf, lineterminator="\n")
+    w.writerow(["category", "description", "amount"])
+    for e in expenses:
+        w.writerow([e["category"], e["description"], e["amount"]])
+    return buf.getvalue()
+
+
+def _render_json(expenses):
+    return json.dumps({"expenses": expenses, "total": total(expenses)}, indent=2)
+
+
+# Strategy registry: one renderer per format; add a format = add one entry.
+RENDERERS = {"text": _render_text, "csv": _render_csv, "json": _render_json}
+
+
 def render_report(expenses, fmt):
-    # NOTE: format-specific branches live here (if/elif chain)
-    if fmt == "text":
-        lines = []
-        for e in expenses:
-            lines.append("%s | %s | %.2f" % (e["category"], e["description"], e["amount"]))
-        lines.append("TOTAL: %.2f" % total(expenses))
-        return "\n".join(lines)
-    elif fmt == "csv":
-        buf = io.StringIO()
-        w = csv.writer(buf, lineterminator="\n")
-        w.writerow(["category", "description", "amount"])
-        for e in expenses:
-            w.writerow([e["category"], e["description"], e["amount"]])
-        return buf.getvalue()
-    elif fmt == "json":
-        return json.dumps({"expenses": expenses, "total": total(expenses)}, indent=2)
-    else:
-        raise ValueError("unknown format: " + fmt)
+    try:
+        renderer = RENDERERS[fmt]
+    except KeyError:
+        raise ValueError("unknown format: " + fmt) from None
+    return renderer(expenses)
