@@ -3,7 +3,8 @@
 Tiny command-line expense tracker (course project, no real data).
 
 ## Setup
-    pip install -r requirements.txt
+No runtime dependencies (Python 3.11+ standard library only).
+Optional dev tools: `pip install ruff mypy`.
 
 ## Usage
     python -m expense_tool.cli add "Coffee" 3.50 food
